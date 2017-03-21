@@ -1,0 +1,33 @@
+# Presentation
+
+## Purpose
+
+...
+
+To view, either download the source and open `index.html` in a HTML5 web browser, or go to https://jdigger.github.io/xxxxxx
+
+## Building
+
+To generate a new index.html file:
+[source,bash]
+--
+$ ./gradlew clean asciidoctor
+--
+
+## Developing
+
+To serve the presentation on http://localhost:5050/ and regenerate on any changes:
+[source,bash]
+--
+$ ./gradlew clean asciidoctor serve -t
+--
+
+## Uses
+
+* https://github.com/hakimel/reveal.js/[Reveal.js], a framework for easily creating beautiful presentations using HTML
+* http://asciidoctor.org/[Asciidoctor], plain text processor with powerful content capabilities
+* https://github.com/asciidoctor/asciidoctor-reveal.js/[Asciidoctor Reveal.js], for translating Asciidoctor content to Reveal.js slides
+
+## License
+
+* The presentation content is http://creativecommons.org/licenses/by/4.0/[CC Attribution 4.0 licensed], Copyright (C) 2017 Jim J. Moore

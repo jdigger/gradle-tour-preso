@@ -1,0 +1,148 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.3'
+        classpath 'org.asciidoctor:asciidoctorj:1.5.5'
+        classpath 'com.github.jruby-gradle:jruby-gradle-plugin:0.1.5'
+        classpath 'org.ysb33r.gradle:vfs-gradle-plugin:1.0-beta1'
+        classpath 'commons-httpclient:commons-httpclient:3.1'
+        classpath 'io.ratpack:ratpack-groovy:1.4.5'
+        classpath 'org.ajoberstar:gradle-git:1.6.0'
+    }
+}
+
+apply plugin: 'com.github.jruby-gradle.base'
+apply plugin: 'org.ysb33r.vfs'
+apply plugin: 'java'
+apply plugin: 'org.asciidoctor.convert'
+apply plugin: 'idea'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    gems 'rubygems:asciidoctor:1.5.5' // template format for AsciiDoc -> Reveal.js
+    gems 'rubygems:slim:2.1.0' // template format for AsciiDoc -> Reveal.js
+
+    testCompile "org.gradle:gradle-tooling-api:${gradle.gradleVersion}" // hack to get the source
+    testCompile "io.ratpack:ratpack-groovy:1.4.5" // hack to get IDEA to know classes
+}
+
+// force using the 2.0.6 Tilt gem: 2.0.7 breaks the build
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'rubygems' && details.requested.name == 'tilt') {
+            details.useVersion '2.0.6'
+        }
+    }
+}
+
+def downloadDir = new File((File)this.buildDir, 'download')
+def templateDir = new File(downloadDir, 'templates')
+def revealjsDir = new File(downloadDir, 'reveal.js')
+
+task download {
+    def asciidoctorRevealjsVersion = '1.0.2'
+    def revealjsVersion = '3.4.1'
+
+    doLast {
+        mkdir downloadDir
+        vfs {
+            cp "zip:https://github.com/asciidoctor/asciidoctor-reveal.js/archive/v${asciidoctorRevealjsVersion}.zip!asciidoctor-reveal.js-${asciidoctorRevealjsVersion}",
+                    templateDir, recursive: true, overwrite: true
+            cp "zip:https://github.com/hakimel/reveal.js/archive/${revealjsVersion}.zip!reveal.js-${revealjsVersion}",
+                    revealjsDir, recursive: true, overwrite: true
+        }
+    }
+    description = "Download extra revealjs resources"
+    inputs.dir templateDir
+    inputs.dir revealjsDir
+    outputs.dir templateDir
+    outputs.dir revealjsDir
+}
+
+asciidoctor {
+    dependsOn jrubyPrepareGems, download
+
+    gemPath = jrubyPrepareGems.outputDir
+
+    sources {
+        include 'index.adoc'
+    }
+
+    resources {
+        from(sourceDir) {
+            include 'images/**'
+        }
+        from(downloadDir) {
+            include 'reveal.js/**'
+        }
+    }
+
+    backends 'revealjs'
+
+    attributes 'sourcedir': project.sourceSets.main.java.srcDirs[0],
+            'source-highlighter': 'coderay',
+            'imagesdir': './images',
+            // 'toc': 'left',
+            'icons': 'font',
+            'setanchors': 'true',
+            // 'idprefix': '',
+            // 'idseparator': '-',
+            // 'docinfo1': 'true',
+            'revealjs_transition': 'none',
+            // 'revealjs_history': 'true',
+            'revealjs_slideNumber': 'true',
+            'revealjs_theme': 'simple'
+
+    options template_dirs: [new File(templateDir, 'templates/slim').absolutePath]
+}
+
+idea {
+    project {
+        jdkName "1.8"
+        languageLevel "1.8"
+        ipr {
+            withXml { provider ->
+                def node = provider.asNode()
+                node.component.find { it.'@name' == 'VcsDirectoryMappings' }?.mapping[0].'@vcs' = 'Git'
+            }
+        }
+    }
+}
+
+apply plugin: 'org.ajoberstar.github-pages'
+
+githubPages {
+    pages {
+        from(file("$rootDir/build/asciidoc/revealjs")) {
+            into "."
+        }
+    }
+}
+
+
+wrapper.gradleVersion = '3.4.1'
+
+task serve {
+    description = "Serve the presentation on localhost:5050"
+    doLast {
+        // not sure why I need to run this in a shell
+        new GroovyShell(this.class.classLoader).evaluate '''import static ratpack.groovy.Groovy.ratpack
+        ratpack {
+            serverConfig {
+                port 5050
+                development = true
+                baseDir new File('build').absoluteFile.toPath()
+            }
+            handlers {
+                files { dir 'asciidoc/revealjs' indexFiles 'index.html' }
+            }
+        }
+        '''
+    }
+}
