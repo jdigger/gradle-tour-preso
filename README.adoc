@@ -2,9 +2,9 @@
 
 ## Purpose
 
-...
+A tour through https://gradle.org/[Gradle]
 
-To view, either download the source and open `index.html` in a HTML5 web browser, or go to https://jdigger.github.io/xxxxxx
+Go to https://jdigger.github.io/gradle-tour-preso/
 
 ## Building
 
@@ -16,11 +16,24 @@ $ ./gradlew clean asciidoctor
 
 ## Developing
 
-To serve the presentation on http://localhost:5050/ and regenerate on any changes:
+To start a server listening on http://localhost:5050/
 [source,bash]
 --
-$ ./gradlew clean asciidoctor serve -t
+$ ./gradlew serve
 --
+
+To watch the source and regenerate on any changes:
+[source,bash]
+--
+$ ./gradlew asciidoctor -t
+--
+
+To publish to GitHub Pages:
+[source,bash]
+--
+$ ./gradlew gitPublishPush
+--
+
 
 ## Uses
 
