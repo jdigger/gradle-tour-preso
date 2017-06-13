@@ -9,7 +9,7 @@
 :revealjs_theme: simple
 :revealjs_controls: false
 
-as of April 2017
+as of June 2017
 
 image::gradle.svg[role=plain, height=200px]
 
@@ -381,20 +381,19 @@ before_install:
 script:
 - docker run -v $HOME/.gradle:/.gradle -v $PWD:/src -w /src openjdk:8u121-jdk ./gradlew -i --no-daemon clean check -g /.gradle
 
-#
 # Caching per https://docs.travis-ci.com/user/languages/java/
-#
 before_cache:
-- rm -f $HOME/.gradle/caches/2.14.1/plugin-resolution/cache.properties.lock
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -rf $HOME/.gradle/caches/*/plugin-resolution/
 cache:
   directories:
-  - $HOME/.gradle/caches/
-  - $HOME/.gradle/wrapper/
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
 --
 
 == Still Need MORE Control?
 
-image::Puppet_Master_comic.jpg[]
+image::Puppet_Master_comic.jpg[height=600]
 
 == There are several powerful Docker plugins
 
@@ -405,6 +404,8 @@ Two of the most popular are
 
 They allow you to dynamically create images (with or without an intermediate `Dockerfile`), run images,
 push to repositories, etc.
+
+https://www.oreilly.com/learning/how-do-i-package-my-java-application-as-a-docker-image-using-gradle[O'Reilly has a short video demonstrating packing up a Java app in a Docker container using Gradle]
 
 [%notitle]
 == Docker Example
@@ -429,6 +430,10 @@ they were Gradle tasks
 
 * Node need not have been previously installed
 * Everything's sandboxed, so you can control the specific versions involved
+
+[.smaller]
+Other popular tools that are "`just`" Node modules, like WebPack, are of course easily handled without
+specific plugin support needed
 
 == Need something from Ruby?
 
@@ -491,7 +496,7 @@ BUILD SUCCESSFUL
 
 == Deprecated Left Shift
 
-In older example you will see task declarations like
+In older examples you will see task declarations like
 
 [source, groovy]
 --
@@ -574,7 +579,7 @@ different languages (e.g., Groovy, Clojure, Scala), etc.
 
 == "```Configuration```"
 
-a dynamic sets of artifacts.
+a dynamic sets of artifacts
 
 [%notitle]
 == Configurations for SourceSets
@@ -712,7 +717,10 @@ Of course more sophisticated and common needs should be extracted into custom Ta
 
 == Plugin Registry
 
-There's currently over 1,400 plugins at https://plugins.gradle.org/
+There's currently over 1,500 plugins at https://plugins.gradle.org/
+
+image::farside_pull.jpg[role=plain, height="400px"]
+
 
 == Composite Builds
 
@@ -875,7 +883,7 @@ You *_can_* specify dynamic versions (e.g., "12.3.+", "latest.release", "[2.3, 3
 
 Unless you're purposely writing a randomness generator, non-determinism is not a desired trait
 
-image:random-number.gif[height=100, role=plain, link="http://dilbert.com/strip/2001-10-25"]
+image:random-number.gif[height=100, role=plain, link="http://dilbert.com/strip/2001-10-25"]{nbsp}{nbsp}{nbsp}{nbsp}{nbsp}
 image:random_number.png[height=100, role=plain, link="https://xkcd.com/221/"]
 
 [.smaller]
@@ -973,7 +981,7 @@ image::deamon-icon.png[role="plain"]
 == Benefits
 
 . Startup Speed
-** Leaves the process running, so memory already allocated, filesystem has been read, etc.
+** Leaves the process running, so memory has been already allocated, filesystem has been read, etc.
 ** Caches information like hashes of inputs/outputs, compiled build scripts, etc.
 . Execution Speed
 ** HotSpot sure likes long-lived processes...
@@ -1040,6 +1048,12 @@ Waiting for changes to input files of tasks... (ctrl-d to exit)
 https://blog.gradle.org/incremental-compiler-avoidancep[Incremental Compilation, the Java Library Plugin, and other performance features in Gradle 3.4]
 
 
+== Resources
+
+* https://mrhaki.blogspot.com/search/label/Gradle
+* https://gradle.org/docs
+
+
 == Q & A
 
 image::not_ready_for_questions.png[background, size=contain]
@@ -1058,5 +1072,6 @@ image::not_ready_for_questions.png[background, size=contain]
 * Puppet Master: https://en.wikipedia.org/wiki/File:Puppet_Master_comic.jpg
 * Engineer Brain: https://acmutep.wordpress.com/2011/03/23/career-focus-software-engineer/
 * Not Ready - https://derpibooru.org/1043076[Derpibooru.org]
+* Push/Pull comic - Gary Larson's The FarSide
 * Lifecycle - https://www.tes.com/lessons/X0fKPs6-ICk2lw/life-cycle
 --
